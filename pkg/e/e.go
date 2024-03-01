@@ -2,14 +2,18 @@ package e
 
 import "fmt"
 
-func Wrap(msg string, err error) error {
-	return fmt.Errorf("%s: %w", msg, err)
+func Wrap(err error, msg string, op string) error {
+	if op != "" {
+		return fmt.Errorf("%s: %s: %w", op, msg, err)
+	} else {
+		return fmt.Errorf("%s: %w", msg, err)
+	}
 }
 
-func WrapIfErr(msg string, err error) error {
+func WrapIfErr(err error, msg string, op string) error {
 	if err == nil {
 		return nil
 	}
 
-	return Wrap(msg, err)
+	return Wrap(err, msg, op)
 }

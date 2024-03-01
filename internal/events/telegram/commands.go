@@ -39,7 +39,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 }
 
 func (p *Processor) savePage(ctx context.Context, chatID int, pageUrl string, username string) (err error) {
-	defer func() { err = e.WrapIfErr("can't do command: save page", err) }()
+	defer func() { err = e.WrapIfErr(err, "can't do command: save page", "") }()
 
 	page := &domain.Page{
 		Url:      pageUrl,
@@ -66,7 +66,7 @@ func (p *Processor) savePage(ctx context.Context, chatID int, pageUrl string, us
 }
 
 func (p *Processor) sendRandom(ctx context.Context, chatID int, username string) (err error) {
-	defer func() { err = e.WrapIfErr("can't do command: can't send random", err) }()
+	defer func() { err = e.WrapIfErr(err, "can't do command: can't send random", "") }()
 
 	page, err := p.storage.PickRandom(ctx, username)
 	if err != nil && !errors.Is(err, pages.ErrNoSavedPages) {

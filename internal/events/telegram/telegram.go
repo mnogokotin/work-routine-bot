@@ -35,7 +35,7 @@ func New(client *ctelegram.Client, storage pages.Storage) *Processor {
 func (p *Processor) Fetch(ctx context.Context, limit int) ([]events.Event, error) {
 	updates, err := p.tg.Updates(ctx, p.offset, limit)
 	if err != nil {
-		return nil, e.Wrap("can't get events", err)
+		return nil, e.Wrap(err, "can't get events", "")
 	}
 
 	if len(updates) == 0 {
@@ -58,18 +58,18 @@ func (p *Processor) Process(ctx context.Context, event events.Event) error {
 	case events.Message:
 		return p.processMessage(ctx, event)
 	default:
-		return e.Wrap("can't process message", ErrUnknownEventType)
+		return e.Wrap(ErrUnknownEventType, "can't process message", "")
 	}
 }
 
 func (p *Processor) processMessage(ctx context.Context, event events.Event) error {
 	meta, err := meta(event)
 	if err != nil {
-		return e.Wrap("can't process message", err)
+		return e.Wrap(err, "can't process message", "")
 	}
 
 	if err := p.doCmd(ctx, event.Text, meta.ChatID, meta.Username); err != nil {
-		return e.Wrap("can't process message", err)
+		return e.Wrap(err, "can't process message", "")
 	}
 
 	return nil
@@ -78,7 +78,7 @@ func (p *Processor) processMessage(ctx context.Context, event events.Event) erro
 func meta(event events.Event) (Meta, error) {
 	res, ok := event.Meta.(Meta)
 	if !ok {
-		return Meta{}, e.Wrap("can't get meta", ErrUnknownMetaType)
+		return Meta{}, e.Wrap(ErrUnknownMetaType, "can't get meta", "")
 	}
 
 	return res, nil

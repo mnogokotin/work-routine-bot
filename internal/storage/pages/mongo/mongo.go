@@ -48,14 +48,14 @@ func (s Storage) Save(ctx context.Context, page *domain.Page) error {
 		UserName: page.UserName,
 	})
 	if err != nil {
-		return e.Wrap("can't save page", err)
+		return e.Wrap(err, "can't save page", "")
 	}
 
 	return nil
 }
 
 func (s Storage) PickRandom(ctx context.Context, userName string) (page *domain.Page, err error) {
-	defer func() { err = e.WrapIfErr("can't pick random page", err) }()
+	defer func() { err = e.WrapIfErr(err, "can't pick random page", "") }()
 
 	pipe := bson.A{
 		bson.M{"$sample": bson.M{"size": 1}},
@@ -87,7 +87,7 @@ func (s Storage) PickRandom(ctx context.Context, userName string) (page *domain.
 func (s Storage) Remove(ctx context.Context, domainPage *domain.Page) error {
 	_, err := s.pages.DeleteOne(ctx, toPage(domainPage).Filter())
 	if err != nil {
-		return e.Wrap("can't remove page", err)
+		return e.Wrap(err, "can't remove page", "")
 	}
 
 	return nil
@@ -96,7 +96,7 @@ func (s Storage) Remove(ctx context.Context, domainPage *domain.Page) error {
 func (s Storage) IsExists(ctx context.Context, domainPage *domain.Page) (bool, error) {
 	count, err := s.pages.CountDocuments(ctx, toPage(domainPage).Filter())
 	if err != nil {
-		return false, e.Wrap("can't check if page exists", err)
+		return false, e.Wrap(err, "can't check if page exists", "")
 	}
 
 	return count > 0, nil
