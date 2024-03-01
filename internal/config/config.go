@@ -1,39 +1,46 @@
 package config
 
 import (
-	"flag"
-	"log"
+	"github.com/ilyakaznacheev/cleanenv"
+	"time"
 )
 
-type Config struct {
-	TgBotToken            string
-	MongoConnectionString string
-}
-
-func MustLoad() Config {
-	tgBotTokenToken := flag.String(
-		"tg-bot-token",
-		"",
-		"token for access to telegram bot",
-	)
-
-	mongoConnectionString := flag.String(
-		"mongo-connection-string",
-		"",
-		"connection string for MongoDB",
-	)
-
-	flag.Parse()
-
-	if *tgBotTokenToken == "" {
-		log.Fatal("token is not specified")
-	}
-	if *mongoConnectionString == "" {
-		log.Fatal("mongo connection string is not specified")
+type (
+	Config struct {
+		Env   string `yaml:"env"`
+		Tg    Tg     `yaml:"tg"`
+		Bot   Bot    `yaml:"bot"`
+		Mongo Mongo  `yaml:"mongo"`
 	}
 
-	return Config{
-		TgBotToken:            *tgBotTokenToken,
-		MongoConnectionString: *mongoConnectionString,
+	Tg struct {
+		Host  string `yaml:"host" env:"TG_HOST"`
+		Token string `yaml:"token" env:"TG_TOKEN"`
 	}
+
+	Bot struct {
+		BatchSize int `yaml:"batch_size" env:"BOT_BATCH_SIZE"`
+	}
+
+	Mongo struct {
+		Uri            string        `yaml:"uri" env:"MONGO_URI"`
+		ConnectTimeout time.Duration `yaml:"connect_timeout" env:"MONGO_CONNECT_TIMEOUT"`
+		DbName         string        `yaml:"db_name" env:"MONGO_DB_NAME"`
+	}
+)
+
+func New() *Config {
+	cfg := &Config{}
+
+	err := cleanenv.ReadConfig("./config/main.yml", cfg)
+	if err != nil {
+		panic("can't read config: " + err.Error())
+	}
+
+	err = cleanenv.ReadConfig(".env", cfg)
+	if err != nil {
+		panic("can't read config: " + err.Error())
+	}
+
+	return cfg
 }

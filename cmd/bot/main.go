@@ -2,32 +2,26 @@ package main
 
 import (
 	"log"
-	"time"
-	tgClient "work-routine-bot/internal/clients/telegram"
+	ctelegram "work-routine-bot/internal/clients/telegram"
 	"work-routine-bot/internal/config"
 	"work-routine-bot/internal/consumer/event-consumer"
 	"work-routine-bot/internal/events/telegram"
-	"work-routine-bot/internal/storage/mongo"
-)
-
-const (
-	tgBotHost = "api.telegram.org"
-	batchSize = 100
+	"work-routine-bot/internal/storage/pages/mongo"
 )
 
 func main() {
-	cfg := config.MustLoad()
+	cfg := config.New()
 
-	storage := mongo.New(cfg.MongoConnectionString, 10*time.Second)
+	storage := mongo.New(cfg.Mongo.Uri, cfg.Mongo.ConnectTimeout, cfg.Mongo.DbName)
 
 	eventsProcessor := telegram.New(
-		tgClient.New(tgBotHost, cfg.TgBotToken),
+		ctelegram.New(cfg.Tg.Host, cfg.Tg.Token),
 		storage,
 	)
 
 	log.Print("service started")
 
-	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
+	consumer := event_consumer.New(eventsProcessor, eventsProcessor, cfg.Bot.BatchSize)
 
 	if err := consumer.Start(); err != nil {
 		log.Fatal("service is stopped", err)

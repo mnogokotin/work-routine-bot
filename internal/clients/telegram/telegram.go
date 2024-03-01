@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"work-routine-bot/internal/lib/e"
+	"work-routine-bot/pkg/e"
 )
 
 type Client struct {

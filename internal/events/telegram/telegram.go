@@ -5,14 +5,14 @@ import (
 	"errors"
 	ctelegram "work-routine-bot/internal/clients/telegram"
 	"work-routine-bot/internal/events"
-	"work-routine-bot/internal/lib/e"
-	"work-routine-bot/internal/storage"
+	"work-routine-bot/internal/storage/pages"
+	"work-routine-bot/pkg/e"
 )
 
 type Processor struct {
 	tg      *ctelegram.Client
 	offset  int
-	storage storage.Storage
+	storage pages.Storage
 }
 
 type Meta struct {
@@ -25,7 +25,7 @@ var (
 	ErrUnknownMetaType  = errors.New("unknown meta type")
 )
 
-func New(client *ctelegram.Client, storage storage.Storage) *Processor {
+func New(client *ctelegram.Client, storage pages.Storage) *Processor {
 	return &Processor{
 		tg:      client,
 		storage: storage,
