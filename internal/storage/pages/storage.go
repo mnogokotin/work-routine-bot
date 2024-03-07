@@ -7,10 +7,10 @@ import (
 )
 
 type Storage interface {
-	Save(ctx context.Context, p *domain.Page) error
-	PickRandom(ctx context.Context, userName string) (*domain.Page, error)
+	Store(ctx context.Context, p *domain.Page) error
+	GetRandom(ctx context.Context, username string) (*domain.Page, error)
 	Remove(ctx context.Context, p *domain.Page) error
 	IsExists(ctx context.Context, p *domain.Page) (bool, error)
 }
 
-var ErrNoSavedPages = errors.New("no saved pages")
+var ErrNoStoredPages = errors.New("no stored pages")

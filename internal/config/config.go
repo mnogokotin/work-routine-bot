@@ -9,17 +9,11 @@ type (
 	Config struct {
 		Env   string `yaml:"env"`
 		Tg    Tg     `yaml:"tg"`
-		Bot   Bot    `yaml:"bot"`
 		Mongo Mongo  `yaml:"mongo"`
 	}
 
 	Tg struct {
-		Host  string `yaml:"host" env:"TG_HOST"`
 		Token string `yaml:"token" env:"TG_TOKEN"`
-	}
-
-	Bot struct {
-		BatchSize int `yaml:"batch_size" env:"BOT_BATCH_SIZE"`
 	}
 
 	Mongo struct {

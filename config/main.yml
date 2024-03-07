@@ -1,8 +1,4 @@
 env: "local" # dev, prod
-tg:
-  host: api.telegram.org
-bot:
-  batch_size: 100
 mongo:
   connect_timeout: 10s
   db_name: work_routine_bot
