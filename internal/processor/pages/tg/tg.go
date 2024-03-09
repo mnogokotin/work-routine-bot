@@ -6,27 +6,26 @@ import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"log/slog"
+	"work-routine-bot/internal/bot"
 	"work-routine-bot/internal/storage/pages"
 )
 
 type Processor struct {
 	log     *slog.Logger
-	bot     *telego.Bot
-	channel <-chan telego.Update
+	bot     bot.Bot
 	storage pages.Storage
 }
 
-func New(log *slog.Logger, bot *telego.Bot, channel <-chan telego.Update, storage pages.Storage) *Processor {
+func New(log *slog.Logger, bot bot.Bot, storage pages.Storage) *Processor {
 	return &Processor{
 		log:     log,
 		bot:     bot,
-		channel: channel,
 		storage: storage,
 	}
 }
 
 func (p *Processor) GetChan() <-chan telego.Update {
-	return p.channel
+	return p.bot.Channel
 }
 
 func (p *Processor) Process(ctx context.Context, u telego.Update) error {
@@ -38,7 +37,7 @@ func (p *Processor) Process(ctx context.Context, u telego.Update) error {
 }
 
 func (p *Processor) SendMessage(ctx context.Context, chatID int64, text string) error {
-	_, err := p.bot.SendMessage(
+	_, err := p.bot.Bot.SendMessage(
 		tu.Message(
 			tu.ID(chatID),
 			text,

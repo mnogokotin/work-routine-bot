@@ -26,11 +26,11 @@ func (c *Consumer) Start() error {
 	updatesChan := c.fetcher.GetChan()
 
 	for update := range updatesChan {
-		if err := c.handleUpdate(context.Background(), update); err != nil {
-			c.log.Error("can't handle updates", "", err.Error())
-
-			continue
-		}
+		go func() {
+			if err := c.handleUpdate(context.Background(), update); err != nil {
+				c.log.Error("can't handle updates", "", err.Error())
+			}
+		}()
 	}
 
 	return nil

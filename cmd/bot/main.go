@@ -1,9 +1,9 @@
 package main
 
 import (
-	"work-routine-bot/internal/bot"
+	"work-routine-bot/internal/app"
 )
 
 func main() {
-	bot.Run()
+	app.Run()
 }
