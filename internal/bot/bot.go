@@ -2,6 +2,7 @@ package bot
 
 import (
 	"github.com/mymmrac/telego"
+	"work-routine-bot/internal/processor/pages"
 )
 
 type Bot struct {
@@ -18,6 +19,11 @@ func New(token string) Bot {
 	channel, err := bot.UpdatesViaLongPolling(nil)
 	if err != nil {
 		panic("can't create bot's updates channel: " + err.Error())
+	}
+
+	err = bot.SetMyCommands(&telego.SetMyCommandsParams{Commands: pages.Cmds})
+	if err != nil {
+		panic("can't set bot's commands: " + err.Error())
 	}
 
 	return Bot{

@@ -11,12 +11,6 @@ import (
 	spages "work-routine-bot/internal/storage/pages"
 )
 
-const (
-	HelpCmd   = "/help"
-	RandomCmd = "/random"
-	StartCmd  = "/start"
-)
-
 func (p *Processor) executeCmd(ctx context.Context, u telego.Update) error {
 	chatID := u.Message.Chat.ID
 	username := u.Message.From.Username
@@ -29,11 +23,11 @@ func (p *Processor) executeCmd(ctx context.Context, u telego.Update) error {
 	}
 
 	switch text {
-	case HelpCmd:
+	case pages.HelpCmd.Command:
 		return p.handleHelpCmd(ctx, chatID)
-	case StartCmd:
+	case pages.StartCmd.Command:
 		return p.handleStartCmd(ctx, chatID)
-	case RandomCmd:
+	case pages.RandomCmd.Command:
 		return p.handleRandomCmd(ctx, chatID, username)
 	default:
 		return p.sendUnknownCommandMsg(ctx, chatID)
