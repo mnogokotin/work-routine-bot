@@ -1,12 +1,14 @@
 package app
 
 import (
+	ppostgres "github.com/mnogokotin/golang-packages/database/postgres"
 	"github.com/mnogokotin/golang-packages/logger"
 	"work-routine-bot/internal/bot"
 	"work-routine-bot/internal/config"
 	"work-routine-bot/internal/consumer/update-consumer"
-	"work-routine-bot/internal/processor/pages/tg"
-	"work-routine-bot/internal/storage/pages/mongo"
+	"work-routine-bot/internal/processor/working-hours/tg"
+	tpostgres "work-routine-bot/internal/storage/tasks/postgres"
+	upostgres "work-routine-bot/internal/storage/users/postgres"
 )
 
 func Run() {
@@ -17,13 +19,22 @@ func Run() {
 	bot_ := bot.New(cfg.Tg.Token)
 	defer bot_.Bot.StopLongPolling()
 
-	pagesStorage := mongo.New(cfg.Mongo.Uri, cfg.Mongo.ConnectTimeout, cfg.Mongo.DbName)
+	ppg, err := ppostgres.New(cfg.Postgres.Uri)
+	if err != nil {
+		panic(err)
+	}
+	userStorage := &upostgres.Storage{
+		Postgres: ppg,
+	}
+	taskStorage := &tpostgres.Storage{
+		Postgres: ppg,
+	}
 
-	pagesProcessor := tg.New(log, bot_, pagesStorage)
+	workingHoursProcessor := tg.New(log, bot_, userStorage, taskStorage)
 
 	log.Info("service started")
 
-	consumer := update_consumer.New(log, pagesProcessor, pagesProcessor)
+	consumer := update_consumer.New(log, workingHoursProcessor, workingHoursProcessor)
 
 	if err := consumer.Start(); err != nil {
 		log.Error("service is stopped", err)

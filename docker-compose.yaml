@@ -6,23 +6,23 @@ services:
     env_file:
       - deploy/prod/.env
     depends_on:
-      - mongo
+      - postgres
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     restart: always
-  mongo:
-    image: mongo:7.0.5
+  postgres:
+    image: postgres:16.2-alpine3.19
     volumes:
-      - mongo_data:/data/db
-    ports:
-      - ${FORWARD_DATABASE_PORT:-27017}:27017
+      - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - deploy/prod/mongo/.env.prod
+      - deploy/prod/postgres/.env.prod
+    ports:
+      - ${FORWARD_DATABASE_PORT:-5432}:5432
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongo mongo:27017/test --quiet
+      test: [ 'CMD-SHELL', 'pg_isready -p 5432' ]
       interval: 3s
       timeout: 3s
       retries: 10
     restart: always
 volumes:
-  mongo_data:
+  postgres_data:

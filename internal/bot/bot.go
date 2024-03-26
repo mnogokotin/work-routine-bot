@@ -2,12 +2,17 @@ package bot
 
 import (
 	"github.com/mymmrac/telego"
-	"work-routine-bot/internal/processor/pages"
+	"work-routine-bot/internal/processor/working-hours"
 )
 
 type Bot struct {
 	Bot     *telego.Bot
 	Channel <-chan telego.Update
+}
+
+var MenuCmds = []telego.BotCommand{
+	working_hours.StartCmd,
+	working_hours.ListWorkingHours,
 }
 
 func New(token string) Bot {
@@ -21,7 +26,7 @@ func New(token string) Bot {
 		panic("can't create bot's updates channel: " + err.Error())
 	}
 
-	err = bot.SetMyCommands(&telego.SetMyCommandsParams{Commands: pages.Cmds})
+	err = bot.SetMyCommands(&telego.SetMyCommandsParams{Commands: MenuCmds})
 	if err != nil {
 		panic("can't set bot's commands: " + err.Error())
 	}
