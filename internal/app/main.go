@@ -1,12 +1,12 @@
 package app
 
 import (
-	ppostgres "github.com/mnogokotin/golang-packages/database/postgres"
+	"github.com/mnogokotin/golang-packages/database/postgres"
 	"github.com/mnogokotin/golang-packages/logger"
 	"work-routine-bot/internal/bot"
 	"work-routine-bot/internal/config"
-	"work-routine-bot/internal/consumer/update-consumer"
-	"work-routine-bot/internal/processor/working-hours/tg"
+	apptg "work-routine-bot/internal/handler/app/tg"
+	whtg "work-routine-bot/internal/handler/working-hours/tg"
 	tpostgres "work-routine-bot/internal/storage/tasks/postgres"
 	upostgres "work-routine-bot/internal/storage/users/postgres"
 )
@@ -17,12 +17,16 @@ func Run() {
 	log := logger.New(cfg.Env)
 
 	bot_ := bot.New(cfg.Tg.Token)
+	defer bot_.Bh.Stop()
 	defer bot_.Bot.StopLongPolling()
 
-	ppg, err := ppostgres.New(cfg.Postgres.Uri)
+	log.Info("service started")
+
+	ppg, err := postgres.New(cfg.Postgres.Uri)
 	if err != nil {
 		panic(err)
 	}
+
 	userStorage := &upostgres.Storage{
 		Postgres: ppg,
 	}
@@ -30,13 +34,8 @@ func Run() {
 		Postgres: ppg,
 	}
 
-	workingHoursProcessor := tg.New(log, bot_, userStorage, taskStorage)
+	apptg.New(log, bot_).Handle()
+	whtg.New(log, bot_, userStorage, taskStorage).Handle()
 
-	log.Info("service started")
-
-	consumer := update_consumer.New(log, workingHoursProcessor, workingHoursProcessor)
-
-	if err := consumer.Start(); err != nil {
-		log.Error("service is stopped", err)
-	}
+	bot_.Bh.Start()
 }
