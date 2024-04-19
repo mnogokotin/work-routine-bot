@@ -4,6 +4,10 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+const (
+	EnvLocal = "local"
+)
+
 type (
 	Config struct {
 		Env      string   `yaml:"env"`

@@ -29,14 +29,14 @@ func (s Storage) GetListByUserId(ctx context.Context, userId int) ([]*domain.Tas
 	rows, err := s.Db.Query(`select id, user_id, project_id, description, duration, date, created_at from tasks 
 	where user_id=$1`, userId)
 	if err != nil {
-		return tasks, e.Wrap("can't get work hours list by userId", err)
+		return tasks, e.Wrap("can't get tasks list by userId", err)
 	}
 
 	for rows.Next() {
 		var task domain.Task
 		err = rows.Scan(&task.ID, &task.UserId, &task.ProjectId, &task.Description, &task.Duration, &task.Date, &task.CreatedAt)
 		if err != nil {
-			return tasks, e.Wrap("can't get work hours list by userId", err)
+			return tasks, e.Wrap("can't get tasks list by userId", err)
 		}
 		tasks = append(tasks, &task)
 	}

@@ -22,14 +22,23 @@ func New(log *slog.Logger, bot bot.Bot) *Handler {
 }
 
 func (h *Handler) Handle() {
-	h.bot.Bh.HandleMessage(func(bot *telego.Bot, message telego.Message) {
-		h.log.Info("got new command", message.From.Username, message.Text)
-
+	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
 		_, _ = bot.SendMessage(
 			tu.Messagef(
-				tu.ID(message.Chat.ID),
-				app.MsgStart, message.From.Username,
+				tu.ID(update.Message.Chat.ID),
+				app.MsgStart, update.Message.From.Username,
 			).WithParseMode(telego.ModeMarkdownV2),
 		)
 	}, th.CommandEqual(app.StartCmd.Command))
+}
+
+func (h *Handler) HandleEnd() {
+	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
+		_, _ = bot.SendMessage(
+			tu.Messagef(
+				tu.ID(update.Message.Chat.ID),
+				app.MsgStart, update.Message.From.Username,
+			).WithParseMode(telego.ModeMarkdownV2),
+		)
+	}, th.Not(th.AnyCommand()))
 }

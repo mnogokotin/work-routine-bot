@@ -1,23 +1,31 @@
 package bot
 
 import (
+	"github.com/looplab/fsm"
 	t "github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
+	"log/slog"
 	"work-routine-bot/internal/handler/app"
-	"work-routine-bot/internal/handler/working-hours"
+	"work-routine-bot/internal/handler/task"
 )
+
+type Fsm struct {
+	Fsm  *fsm.FSM
+	Data interface{}
+}
 
 type Bot struct {
 	Bot *t.Bot
 	Bh  *th.BotHandler
+	Fsm *Fsm
 }
 
 var MenuCmds = []t.BotCommand{
 	app.StartCmd,
-	working_hours.ListWorkingHours,
+	task.MyTasks,
 }
 
-func New(token string) Bot {
+func New(log *slog.Logger, token string, env string) Bot {
 	bot, err := t.NewBot(token)
 	if err != nil {
 		panic("can't create bot: " + err.Error())
@@ -38,8 +46,11 @@ func New(token string) Bot {
 		panic("can't create bot's handler: " + err.Error())
 	}
 
+	fsm_ := &Fsm{Fsm: nil, Data: nil}
+
 	return Bot{
 		Bot: bot,
 		Bh:  bh,
+		Fsm: fsm_,
 	}
 }

@@ -3,10 +3,13 @@ package app
 import (
 	"github.com/mnogokotin/golang-packages/database/postgres"
 	"github.com/mnogokotin/golang-packages/logger"
+	"os"
+	"os/signal"
+	"syscall"
 	"work-routine-bot/internal/bot"
 	"work-routine-bot/internal/config"
 	apptg "work-routine-bot/internal/handler/app/tg"
-	whtg "work-routine-bot/internal/handler/working-hours/tg"
+	ttg "work-routine-bot/internal/handler/task/tg"
 	tpostgres "work-routine-bot/internal/storage/tasks/postgres"
 	upostgres "work-routine-bot/internal/storage/users/postgres"
 )
@@ -16,11 +19,12 @@ func Run() {
 
 	log := logger.New(cfg.Env)
 
-	bot_ := bot.New(cfg.Tg.Token)
-	defer bot_.Bh.Stop()
-	defer bot_.Bot.StopLongPolling()
+	bot_ := bot.New(log, cfg.Tg.Token, cfg.Env)
 
-	log.Info("service started")
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	done := make(chan struct{}, 1)
 
 	ppg, err := postgres.New(cfg.Postgres.Uri)
 	if err != nil {
@@ -34,8 +38,24 @@ func Run() {
 		Postgres: ppg,
 	}
 
-	apptg.New(log, bot_).Handle()
-	whtg.New(log, bot_, userStorage, taskStorage).Handle()
+	appHandler := apptg.New(log, bot_)
+	appHandler.Handle()
+	defer appHandler.HandleEnd()
 
+	ttg.New(log, bot_, userStorage, taskStorage).Handle()
+
+	go func() {
+		<-sigs
+
+		bot_.Bot.StopLongPolling()
+		bot_.Bh.Stop()
+
+		done <- struct{}{}
+	}()
+
+	log.Info("bot started")
 	bot_.Bh.Start()
+
+	<-done
+	log.Info("bot stopped")
 }
