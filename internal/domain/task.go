@@ -7,7 +7,7 @@ type Task struct {
 	UserId      int       `json:"user_id"`
 	ProjectId   int       `json:"project_id"`
 	Description string    `json:"description"`
-	Duration    float64   `json:"duration"`
+	Duration    int       `json:"duration"`
 	Date        time.Time `json:"date"`
 	CreatedAt   time.Time `json:"created_at"`
 }

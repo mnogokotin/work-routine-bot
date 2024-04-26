@@ -1,6 +1,6 @@
 module work-routine-bot
 
-go 1.22.1
+go 1.22.2
 
 require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
@@ -13,11 +13,9 @@ require (
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/bytedance/sonic v1.11.5 // indirect
+	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
-	github.com/chenzhuoyu/iasm v0.9.1 // indirect
-	github.com/cloudwego/base64x v0.1.3 // indirect
+	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/fasthttp/router v1.5.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect

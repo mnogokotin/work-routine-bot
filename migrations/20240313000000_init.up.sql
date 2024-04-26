@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks
     user_id     INT       NOT NULL,
     project_id  INT       NOT NULL,
     description TEXT      NOT NULL,
-    duration    FLOAT8    NOT NULL,
+    duration    INT       NOT NULL,
     date        TIMESTAMP NOT NULL,
     created_at  TIMESTAMP NOT NULL,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE RESTRICT,

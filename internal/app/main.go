@@ -10,6 +10,7 @@ import (
 	"work-routine-bot/internal/config"
 	apptg "work-routine-bot/internal/handler/app/tg"
 	ttg "work-routine-bot/internal/handler/task/tg"
+	ppostgres "work-routine-bot/internal/storage/projects/postgres"
 	tpostgres "work-routine-bot/internal/storage/tasks/postgres"
 	upostgres "work-routine-bot/internal/storage/users/postgres"
 )
@@ -31,10 +32,13 @@ func Run() {
 		panic(err)
 	}
 
-	userStorage := &upostgres.Storage{
+	projectStorage := &ppostgres.Storage{
 		Postgres: ppg,
 	}
 	taskStorage := &tpostgres.Storage{
+		Postgres: ppg,
+	}
+	userStorage := &upostgres.Storage{
 		Postgres: ppg,
 	}
 
@@ -42,7 +46,7 @@ func Run() {
 	appHandler.Handle()
 	defer appHandler.HandleEnd()
 
-	ttg.New(log, bot_, userStorage, taskStorage).Handle()
+	ttg.New(log, bot_, projectStorage, taskStorage, userStorage).Handle()
 
 	go func() {
 		<-sigs
