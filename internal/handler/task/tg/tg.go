@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/mnogokotin/golang-packages/utils/e"
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"log/slog"
+	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -90,10 +93,16 @@ func (h *Handler) Handle() {
 			return
 		}
 
+		projects, err := h.projectProvider.GetList(ctx)
+		if err != nil {
+			h.log.Error("", "", e.Wrap(c, err).Error())
+			return
+		}
+
 		_, _ = bot.SendMessage(
 			tu.Message(
 				tu.ID(query.Message.GetChat().ID),
-				h.BuildListTasksMessage(tasks),
+				h.BuildListTasksMessage(tasks, projects),
 			),
 		)
 	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual("list"))
@@ -291,12 +300,16 @@ func (h *Handler) Handle() {
 	}, fsm.FsmStateEqual(h.bot.Fsm, "add-task-get-date"))
 }
 
-func (h *Handler) BuildListTasksMessage(tasks []*domain.Task) string {
-	var message string
+func (h *Handler) BuildListTasksMessage(tasks []*domain.Task, projects []*domain.Project) string {
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendRow(table.Row{"id", "project", "duration", "date", "desc"})
 
 	for _, task_ := range tasks {
-		message += fmt.Sprintf("%d %d %s\n", task_.ID, task_.ProjectId, task_.Description)
+		idx := slices.IndexFunc(projects, func(p *domain.Project) bool { return p.ID == task_.ProjectId })
+		durationText := fmt.Sprintf("%dh %dm", task_.Duration/60, task_.Duration%60)
+		t.AppendRow([]interface{}{task_.ID, projects[idx].Name, durationText, task_.Date.Format("02 Jan"), task_.Description})
 	}
 
-	return task.MsgListTasks + message
+	return t.RenderMarkdown()
 }
