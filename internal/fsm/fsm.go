@@ -9,10 +9,10 @@ import (
 	"work-routine-bot/internal/bot"
 )
 
-func NewConvFsm(name string, abc interface{}) *fsm.FSM {
+func NewConvFsm(name string, input interface{}) *fsm.FSM {
 	var events fsm.Events
 	var nextFieldName string
-	t := reflect.TypeOf(abc)
+	t := reflect.TypeOf(input)
 	for i := 0; i < t.NumField(); i++ {
 		fieldName := strings.ToLower(t.Field(i).Name)
 		if i+1 < t.NumField() {
@@ -33,7 +33,6 @@ func NewConvFsm(name string, abc interface{}) *fsm.FSM {
 		events,
 		fsm.Callbacks{},
 	)
-
 }
 
 func FsmStateEqual(fsm *bot.Fsm, fsmState string) telegohandler.Predicate {

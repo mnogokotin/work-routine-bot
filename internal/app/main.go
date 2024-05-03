@@ -20,7 +20,7 @@ func Run() {
 
 	log := logger.New(cfg.Env)
 
-	bot_ := bot.New(log, cfg.Tg.Token, cfg.Env)
+	bot_ := bot.New(cfg.Tg.Token, cfg.Env)
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)

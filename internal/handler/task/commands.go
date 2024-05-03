@@ -7,12 +7,16 @@ var (
 		Command:     "mytasks",
 		Description: "edit your tasks",
 	}
-	AddTask = telego.BotCommand{
-		Command:     "newtask",
-		Description: "add task record",
-	}
 	ListTasks = telego.BotCommand{
 		Command:     "listtasks",
 		Description: "get a list of your tasks",
+	}
+	AddTask = telego.BotCommand{
+		Command:     "addtask",
+		Description: "add new task",
+	}
+	DeleteTask = telego.BotCommand{
+		Command:     "deletetask",
+		Description: "delete task",
 	}
 )

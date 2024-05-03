@@ -26,6 +26,8 @@ type ProjectProvider interface {
 }
 
 type TaskProvider interface {
+	Delete(ctx context.Context, id int) error
+	GetById(ctx context.Context, id int) (*domain.Task, error)
 	GetListByUserId(ctx context.Context, userId int) ([]*domain.Task, error)
 	Store(ctx context.Context, task *domain.Task) (*domain.Task, error)
 }
@@ -59,6 +61,10 @@ type AddTaskInput struct {
 	Date        time.Time
 }
 
+type DeleteTaskInput struct {
+	ID int
+}
+
 func (h *Handler) Handle() {
 	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
 		_, _ = bot.SendMessage(
@@ -70,6 +76,10 @@ func (h *Handler) Handle() {
 					tu.InlineKeyboardRow(
 						tu.InlineKeyboardButton("List tasks").WithCallbackData("list"),
 						tu.InlineKeyboardButton("Add task").WithCallbackData("add"),
+					),
+					tu.InlineKeyboardRow(
+						tu.InlineKeyboardButton("Edit task").WithCallbackData("edit"),
+						tu.InlineKeyboardButton("Delete task").WithCallbackData("delete"),
 					),
 				),
 			),
@@ -102,13 +112,13 @@ func (h *Handler) Handle() {
 		_, _ = bot.SendMessage(
 			tu.Message(
 				tu.ID(query.Message.GetChat().ID),
-				h.BuildListTasksMessage(tasks, projects),
+				task.MsgListTasks+h.BuildListTasksMessage(tasks, projects),
 			),
 		)
 	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual("list"))
 
 	h.bot.Bh.HandleCallbackQuery(func(bot *telego.Bot, query telego.CallbackQuery) {
-		c := "add task project name"
+		c := task.AddTask.Command + " project name"
 		ctx := context.Background()
 		h.bot.Fsm.Fsm = fsm.NewConvFsm("add-task", AddTaskInput{})
 		h.bot.Fsm.Data = AddTaskInput{}
@@ -178,11 +188,11 @@ func (h *Handler) Handle() {
 	}, fsm.FsmStateEqual(h.bot.Fsm, "add-task-get-description"))
 
 	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
-		c := "add task project duration"
+		c := task.AddTask.Command + " project duration"
 
 		durationParts := strings.Split(update.Message.Text, " ")
 		if len(durationParts) != 2 {
-			h.log.Error("", "", e.Wrap(c, errors.New("task add wrong duration format")).Error())
+			h.log.Error("", "", e.Wrap(c, errors.New("wrong duration format")).Error())
 			_, _ = bot.SendMessage(
 				tu.Message(
 					tu.ID(update.Message.Chat.ID),
@@ -201,7 +211,7 @@ func (h *Handler) Handle() {
 			} else if err2 != nil {
 				err = err2
 			} else {
-				err = errors.New("task add wrong minutes format")
+				err = errors.New("wrong minutes format")
 			}
 
 			h.log.Error("", "", e.Wrap(c, err).Error())
@@ -228,11 +238,11 @@ func (h *Handler) Handle() {
 	}, fsm.FsmStateEqual(h.bot.Fsm, "add-task-get-duration"))
 
 	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
-		c := "add task project date"
+		c := task.AddTask.Command + " date"
 
 		dateParts := strings.Split(update.Message.Text, " ")
 		if len(dateParts) != 2 {
-			h.log.Error("", "", e.Wrap(c, errors.New("task add wrong date format")).Error())
+			h.log.Error("", "", e.Wrap(c, errors.New("wrong date format")).Error())
 			_, _ = bot.SendMessage(
 				tu.Message(
 					tu.ID(update.Message.Chat.ID),
@@ -251,7 +261,7 @@ func (h *Handler) Handle() {
 			} else if err2 != nil {
 				err = err2
 			} else {
-				err = errors.New("task add wrong minutes format")
+				err = errors.New("wrong minutes format")
 			}
 
 			h.log.Error("", "", e.Wrap(c, err).Error())
@@ -280,7 +290,7 @@ func (h *Handler) Handle() {
 		fsmData := h.bot.Fsm.Data.(AddTaskInput)
 		fsmData.Date = date
 
-		task1 := domain.Task{
+		taskDomain := domain.Task{
 			UserId:      int(update.Message.From.ID),
 			ProjectId:   fsmData.ProjectId,
 			Description: fsmData.Description,
@@ -289,15 +299,95 @@ func (h *Handler) Handle() {
 			CreatedAt:   time.Now(),
 		}
 
-		_, _ = h.taskProvider.Store(update.Context(), &task1)
+		storedTask_, err := h.taskProvider.Store(update.Context(), &taskDomain)
+		if err != nil {
+			h.log.Error("", "", e.Wrap(c, err).Error())
+			_, _ = bot.SendMessage(
+				tu.Message(
+					tu.ID(update.Message.Chat.ID),
+					task.MsgAddTaskCantStoreErr,
+				),
+			)
+			return
+		}
 
 		_, _ = bot.SendMessage(
-			tu.Message(
+			tu.Messagef(
 				tu.ID(update.Message.Chat.ID),
 				task.MsgAddTaskDone,
+				&storedTask_.ID,
 			),
 		)
 	}, fsm.FsmStateEqual(h.bot.Fsm, "add-task-get-date"))
+
+	h.bot.Bh.HandleCallbackQuery(func(bot *telego.Bot, query telego.CallbackQuery) {
+		h.bot.Fsm.Fsm = fsm.NewConvFsm("delete-task", DeleteTaskInput{})
+
+		_, _ = bot.SendMessage(
+			tu.Message(
+				tu.ID(query.Message.GetChat().ID),
+				task.MsgDeleteTask,
+			),
+		)
+	}, th.AnyCallbackQueryWithMessage(), th.CallbackDataEqual("delete"))
+
+	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
+		c := task.DeleteTask.Command + " task_id"
+		taskId, err := strconv.Atoi(update.Message.Text)
+
+		if err != nil {
+			h.log.Error("", "", e.Wrap(c, err).Error())
+			_, _ = bot.SendMessage(
+				tu.Message(
+					tu.ID(update.Message.Chat.ID),
+					task.MsgDeleteTaskFormatErr,
+				),
+			)
+			return
+		}
+
+		task_, err := h.taskProvider.GetById(update.Context(), taskId)
+		if err != nil {
+			h.log.Error("", "", e.Wrap(c, errors.New("task not found")).Error())
+			_, _ = bot.SendMessage(
+				tu.Message(
+					tu.ID(update.Message.Chat.ID),
+					task.MsgDeleteTaskNotFound,
+				),
+			)
+			return
+		}
+
+		if task_.UserId != int(update.Message.From.ID) {
+			_, _ = bot.SendMessage(
+				tu.Message(
+					tu.ID(update.Message.Chat.ID),
+					task.MsgDeleteTaskNotFound,
+				),
+			)
+			return
+		}
+
+		err = h.taskProvider.Delete(update.Context(), taskId)
+		if err != nil {
+			h.log.Error("", "", e.Wrap(c, errors.New("can't delete")).Error())
+			_, _ = bot.SendMessage(
+				tu.Message(
+					tu.ID(update.Message.Chat.ID),
+					task.MsgDeleteTaskCantStoreErr,
+				),
+			)
+			return
+		}
+
+		_, _ = bot.SendMessage(
+			tu.Messagef(
+				tu.ID(update.Message.Chat.ID),
+				task.MsgDeleteTaskDone,
+				taskId,
+			),
+		)
+	}, fsm.FsmStateEqual(h.bot.Fsm, "delete-task-get-id"))
 }
 
 func (h *Handler) BuildListTasksMessage(tasks []*domain.Task, projects []*domain.Project) string {

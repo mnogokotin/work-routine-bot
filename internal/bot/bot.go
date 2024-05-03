@@ -4,7 +4,6 @@ import (
 	"github.com/looplab/fsm"
 	t "github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
-	"log/slog"
 	"work-routine-bot/internal/handler/app"
 	"work-routine-bot/internal/handler/task"
 )
@@ -25,7 +24,7 @@ var MenuCmds = []t.BotCommand{
 	task.MyTasks,
 }
 
-func New(log *slog.Logger, token string, env string) Bot {
+func New(token string, env string) Bot {
 	bot, err := t.NewBot(token)
 	if err != nil {
 		panic("can't create bot: " + err.Error())
