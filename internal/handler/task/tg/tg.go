@@ -67,11 +67,13 @@ type DeleteTaskInput struct {
 
 func (h *Handler) Handle() {
 	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
+		h.bot.Fsm.Fsm = nil
+
 		_, _ = bot.SendMessage(
 			tu.Message(
 				tu.ID(update.Message.Chat.ID),
 				task.MsgMyTasks,
-			).WithParseMode(telego.ModeMarkdownV2).WithReplyMarkup(
+			).WithReplyMarkup(
 				tu.InlineKeyboard(
 					tu.InlineKeyboardRow(
 						tu.InlineKeyboardButton("List tasks").WithCallbackData("list"),
@@ -90,6 +92,8 @@ func (h *Handler) Handle() {
 		c := task.ListTasks.Command
 		username := query.From.Username
 		ctx := context.Background()
+
+		h.bot.Fsm.Fsm = nil
 
 		user, err := h.userProvider.GetByUsername(ctx, username)
 		if err != nil {
@@ -152,7 +156,7 @@ func (h *Handler) Handle() {
 			tu.Message(
 				tu.ID(query.Message.GetChat().ID),
 				task.MsgAddTask,
-			).WithParseMode(telego.ModeMarkdownV2).WithParseMode(telego.ModeMarkdownV2).WithReplyMarkup(
+			).WithReplyMarkup(
 				tu.InlineKeyboard(rows...),
 			),
 		)

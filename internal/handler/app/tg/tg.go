@@ -23,6 +23,8 @@ func New(log *slog.Logger, bot bot.Bot) *Handler {
 
 func (h *Handler) Handle() {
 	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
+		h.bot.Fsm.Fsm = nil
+
 		_, _ = bot.SendMessage(
 			tu.Messagef(
 				tu.ID(update.Message.Chat.ID),
@@ -34,6 +36,8 @@ func (h *Handler) Handle() {
 
 func (h *Handler) HandleEnd() {
 	h.bot.Bh.Handle(func(bot *telego.Bot, update telego.Update) {
+		h.bot.Fsm.Fsm = nil
+
 		_, _ = bot.SendMessage(
 			tu.Messagef(
 				tu.ID(update.Message.Chat.ID),
