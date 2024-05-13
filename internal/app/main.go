@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/mnogokotin/golang-packages/database/postgres"
 	"github.com/mnogokotin/golang-packages/logger"
+	"github.com/mnogokotin/golang-packages/message_queue/rabbitmq"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,7 +15,6 @@ import (
 	tpg "work-routine-bot/internal/storage/tasks/postgres"
 	trmq "work-routine-bot/internal/storage/tasks/rabbitmq"
 	upg "work-routine-bot/internal/storage/users/postgres"
-	"work-routine-bot/pkg/rabbitmq"
 )
 
 func Run() {

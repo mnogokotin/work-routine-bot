@@ -7,7 +7,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/lib/pq v1.10.9
 	github.com/looplab/fsm v1.0.1
-	github.com/mnogokotin/golang-packages v1.7.0
+	github.com/mnogokotin/golang-packages v1.8.0
 	github.com/mymmrac/telego v0.29.2
 	github.com/rabbitmq/amqp091-go v1.10.0
 )

@@ -51,8 +51,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-runewidth v0.0.15 h1:UNAjwbU9l54TA3KzvqLGxwWjHmMgBUVhBiTjelZgg3U=
 github.com/mattn/go-runewidth v0.0.15/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
-github.com/mnogokotin/golang-packages v1.7.0 h1:7Aa5WbnHpVep8UiGAJV8N11Q7H2QsfyBloYQVnLR/ug=
-github.com/mnogokotin/golang-packages v1.7.0/go.mod h1:vcT7pgaPB3ZiUx27qouz+cMfcTq+jqYKJZohKAZxY7Q=
+github.com/mnogokotin/golang-packages v1.8.0 h1:INGnqKnBuQKFKUmOD5vRP62+QmjIfYzFAeKJcbZFlug=
+github.com/mnogokotin/golang-packages v1.8.0/go.mod h1:DHSKJgICDZtX1uO7+UZbXq+f6UvjbItn5fCwMi7bcJs=
 github.com/mymmrac/telego v0.29.2 h1:5+fQ/b8d8Ld6ihCJ0OLe1CwUdT3t1sIUl3RaSaSvRJs=
 github.com/mymmrac/telego v0.29.2/go.mod h1:BsKr+GF9BHqaVaLBwsZeDnfuJcJx2olWuDEtKm4zHMc=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

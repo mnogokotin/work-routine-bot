@@ -3,11 +3,12 @@ package rabbitmq
 import (
 	"context"
 	"encoding/gob"
+	"github.com/mnogokotin/golang-packages/message_queue/rabbitmq"
 	"github.com/mnogokotin/golang-packages/utils/e"
+	ur "github.com/mnogokotin/golang-packages/utils/rabbitmq"
 	"github.com/rabbitmq/amqp091-go"
 	"time"
 	"work-routine-bot/internal/domain"
-	"work-routine-bot/pkg/rabbitmq"
 )
 
 type Storage struct {
@@ -26,7 +27,7 @@ func (s Storage) SendOnCreateMessage(ctx context.Context, task *domain.Task) err
 	gob.Register(task)
 	body := make(map[string]interface{})
 	body["task"] = task
-	bodyEncoded := rabbitmq.Encode(body)
+	bodyEncoded := ur.Encode(body)
 
 	err = s.Ch.PublishWithContext(ctx,
 		"",
