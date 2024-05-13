@@ -13,6 +13,7 @@ type (
 		Env      string   `yaml:"env"`
 		Tg       Tg       `yaml:"tg"`
 		Postgres Postgres `yaml:"postgres"`
+		Rabbitmq Rabbitmq `yaml:"rabbitmq"`
 	}
 
 	Tg struct {
@@ -21,6 +22,10 @@ type (
 
 	Postgres struct {
 		Uri string `yaml:"url" env:"PG_URI"`
+	}
+
+	Rabbitmq struct {
+		Uri string `yaml:"url" env:"RABBITMQ_URI"`
 	}
 )
 

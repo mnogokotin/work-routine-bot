@@ -10,9 +10,11 @@ import (
 	"work-routine-bot/internal/config"
 	apptg "work-routine-bot/internal/handler/app/tg"
 	ttg "work-routine-bot/internal/handler/task/tg"
-	ppostgres "work-routine-bot/internal/storage/projects/postgres"
-	tpostgres "work-routine-bot/internal/storage/tasks/postgres"
-	upostgres "work-routine-bot/internal/storage/users/postgres"
+	ppg "work-routine-bot/internal/storage/projects/postgres"
+	tpg "work-routine-bot/internal/storage/tasks/postgres"
+	trmq "work-routine-bot/internal/storage/tasks/rabbitmq"
+	upg "work-routine-bot/internal/storage/users/postgres"
+	"work-routine-bot/pkg/rabbitmq"
 )
 
 func Run() {
@@ -27,32 +29,42 @@ func Run() {
 
 	done := make(chan struct{}, 1)
 
-	ppg, err := postgres.New(cfg.Postgres.Uri)
+	pg, err := postgres.New(cfg.Postgres.Uri)
 	if err != nil {
 		panic(err)
 	}
 
-	projectStorage := &ppostgres.Storage{
-		Postgres: ppg,
+	rmq, err := rabbitmq.New(cfg.Rabbitmq.Uri)
+	if err != nil {
+		panic(err)
 	}
-	taskStorage := &tpostgres.Storage{
-		Postgres: ppg,
+
+	projectPqStorage := &ppg.Storage{
+		Postgres: pg,
 	}
-	userStorage := &upostgres.Storage{
-		Postgres: ppg,
+	taskPgStorage := &tpg.Storage{
+		Postgres: pg,
+	}
+	taskRmqStorage := &trmq.Storage{
+		Rabbitmq: rmq,
+	}
+	userPgStorage := &upg.Storage{
+		Postgres: pg,
 	}
 
 	appHandler := apptg.New(log, bot_)
 	appHandler.Handle()
 	defer appHandler.HandleEnd()
 
-	ttg.New(log, bot_, projectStorage, taskStorage, userStorage).Handle()
+	ttg.New(log, bot_, projectPqStorage, taskPgStorage, taskRmqStorage, userPgStorage).Handle()
 
 	go func() {
 		<-sigs
 
 		bot_.Bot.StopLongPolling()
 		bot_.Bh.Stop()
+		pg.Close()
+		rmq.Close()
 
 		done <- struct{}{}
 	}()

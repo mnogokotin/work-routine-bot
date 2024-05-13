@@ -65,11 +65,12 @@ func (s Storage) GetListByUserId(ctx context.Context, userId int) ([]*domain.Tas
 }
 
 func (s Storage) Store(ctx context.Context, task *domain.Task) (*domain.Task, error) {
+	var task_ domain.Task
 	err := s.Db.QueryRow(`insert into tasks(user_id, project_id, description, duration, date, created_at)
-	VALUES($1, $2, $3, $4, $5, $6) RETURNING id`, task.UserId, task.ProjectId, task.Description, task.Duration, task.Date, time.Now()).Scan(task.ID)
+	VALUES($1, $2, $3, $4, $5, $6) RETURNING id`, task.UserId, task.ProjectId, task.Description, task.Duration, task.Date, time.Now()).Scan(&task_.ID)
 	if err != nil {
 		return nil, e.Wrap("can't store task", err)
 	}
 
-	return task, nil
+	return &task_, nil
 }

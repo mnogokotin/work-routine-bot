@@ -32,6 +32,10 @@ type TaskProvider interface {
 	Store(ctx context.Context, task *domain.Task) (*domain.Task, error)
 }
 
+type TaskRmqProvider interface {
+	SendOnCreateMessage(ctx context.Context, task *domain.Task) error
+}
+
 type UserProvider interface {
 	GetByUsername(ctx context.Context, username string) (*domain.User, error)
 }
@@ -41,15 +45,17 @@ type Handler struct {
 	bot             bot.Bot
 	projectProvider ProjectProvider
 	taskProvider    TaskProvider
+	taskRmqProvider TaskRmqProvider
 	userProvider    UserProvider
 }
 
-func New(log *slog.Logger, bot bot.Bot, projectProvider ProjectProvider, taskProvider TaskProvider, userProvider UserProvider) *Handler {
+func New(log *slog.Logger, bot bot.Bot, projectProvider ProjectProvider, taskProvider TaskProvider, taskRmqProvider TaskRmqProvider, userProvider UserProvider) *Handler {
 	return &Handler{
 		log:             log,
 		bot:             bot,
 		projectProvider: projectProvider,
 		taskProvider:    taskProvider,
+		taskRmqProvider: taskRmqProvider,
 		userProvider:    userProvider,
 	}
 }
@@ -313,6 +319,10 @@ func (h *Handler) Handle() {
 				),
 			)
 			return
+		}
+
+		if err = h.taskRmqProvider.SendOnCreateMessage(update.Context(), &taskDomain); err != nil {
+			h.log.Error("", "", e.Wrap(c, err).Error())
 		}
 
 		_, _ = bot.SendMessage(

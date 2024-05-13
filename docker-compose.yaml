@@ -24,5 +24,14 @@ services:
       timeout: 3s
       retries: 10
     restart: always
+  rabbitmq:
+    image: rabbitmq:3.13.2-management-alpine
+    ports:
+      - ${RABBITMQ_PORT:-5672}:5672
+      - ${ADMIN_RABBITMQ_PORT:-15672}:15672
+    volumes:
+      - ${HOME}/dev-rabbitmq/data/:/var/lib/rabbitmq/data/
+      - ${HOME}/dev-rabbitmq/log/:/var/log/rabbitmq/log/
+    restart: always
 volumes:
   postgres_data:

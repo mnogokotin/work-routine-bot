@@ -14,5 +14,6 @@ type Storage interface {
 	Delete(ctx context.Context, id int) error
 	GetById(ctx context.Context, id int) (*domain.Task, error)
 	GetListByUserId(ctx context.Context, userId int) ([]*domain.Task, error)
+	SendOnCreateMessage(ctx context.Context, task *domain.Task) error
 	Store(ctx context.Context, task *domain.Task) (*domain.Task, error)
 }
