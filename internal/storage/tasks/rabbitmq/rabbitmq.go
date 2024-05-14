@@ -27,7 +27,7 @@ func (s Storage) SendOnCreateMessage(ctx context.Context, task *domain.Task) err
 	gob.Register(task)
 	body := make(map[string]interface{})
 	body["task"] = task
-	bodyEncoded := ur.Encode(body)
+	encodedBody := ur.Encode(body)
 
 	err = s.Ch.PublishWithContext(ctx,
 		"",
@@ -36,7 +36,7 @@ func (s Storage) SendOnCreateMessage(ctx context.Context, task *domain.Task) err
 		false,
 		amqp091.Publishing{
 			ContentType: "text/plain",
-			Body:        []byte(bodyEncoded),
+			Body:        []byte(encodedBody),
 		})
 	if err != nil {
 		return e.Wrap("failed to publish a task created message", err)
